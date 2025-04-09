@@ -1,6 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from './entities/user.entity';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -25,4 +26,16 @@ export class AuthController {
   ){
     return this.authService.login(email, password);
   }
+}
+
+@Controller('admin') 
+export class AdminController {
+    constructor(private readonly authService: AuthService) {}
+    
+    @Get('data')
+    // will use guard here, later
+    async getAdminData(@Req() request: Request) {
+        return this.authService.getAdminData(request);  
+    }
+
 }

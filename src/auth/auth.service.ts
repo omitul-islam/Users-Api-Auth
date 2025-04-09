@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role, User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +12,25 @@ export class AuthService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    console.log(type, token);
+    
+    return type === 'Bearer' ? token : undefined;
+  }
+
+  private verifyToken(token: string) {
+    // console.log(token);
+    try {
+      const decoded = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET, 
+      });
+      return decoded;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
 
   async register(id:number, username: string, email: string, age: number, password: string, role: Role) {
     const userExists = await this.userRepository.findOneBy({ email });
@@ -51,5 +71,20 @@ export class AuthService {
     });
     return {message: 'Successfully logged in!', your_token: token};
 
+  }
+  
+  async getAdminData(request:Request) {
+    const token = this.extractTokenFromHeader(request);
+    // console.log("dekho: ",token);
+    if(!token) {
+        throw new UnauthorizedException('There is no authorization token!');
+    }
+
+    const decodedToken = this.verifyToken(token);
+    // console.log("This is Decoded Token: ",decodedToken)
+    const email = decodedToken.email;
+
+    const admin = await this.userRepository.findOneBy({email});
+    return admin;
   }
 }
