@@ -17,4 +17,12 @@ export class AuthController {
   ) {
     return this.authService.register(id, username, email,age, password, role);
   }
+
+  @Post('login')
+  async login(
+    @Body('email') email:string,
+    @Body('password') password: string
+  ){
+    return this.authService.login(email, password);
+  }
 }
