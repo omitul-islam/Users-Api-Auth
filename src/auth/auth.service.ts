@@ -5,33 +5,17 @@ import * as bcrypt from 'bcrypt';
 import { Role, User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { JwtUtilsService } from './jwt.utils';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private jwtUtilsService: JwtUtilsService,
   ) {}
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    console.log(type, token);
-    
-    return type === 'Bearer' ? token : undefined;
-  }
-
-  private verifyToken(token: string) {
-    // console.log(token);
-    try {
-      const decoded = this.jwtService.verify(token, {
-        secret: process.env.JWT_SECRET, 
-      });
-      return decoded;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
-    }
-  }
-
+ 
   async register(id:number, username: string, email: string, age: number, password: string, role: Role) {
     const userExists = await this.userRepository.findOneBy({ email });
     if (userExists) {
@@ -51,7 +35,7 @@ export class AuthService {
     await this.userRepository.save(newUser);
     const {password: _password, ...result} = newUser;
     return { message: 'User is registered successfully', User: result };
-  }
+  } 
   
   async login(email: string, password: string) {
     const user = await this.userRepository.findOneBy({email});
@@ -63,8 +47,8 @@ export class AuthService {
     if(!isPasswordValid) {
        throw new BadRequestException('Wrong Password!'); 
     }
-
-    const payload = {id: user.id, email: user.email};
+    // console.log(user.role);
+    const payload = {id: user.id, email: user.email, role: user.role, name:user.username};
     const token = this.jwtService.sign(payload, {
         secret: process.env.JWT_SECRET,
         expiresIn: process.env.JWT_EXPIRATION
@@ -74,13 +58,13 @@ export class AuthService {
   }
   
   async getAdminData(request:Request) {
-    const token = this.extractTokenFromHeader(request);
+    const token = this.jwtUtilsService.extractTokenFromHeader(request);
     // console.log("dekho: ",token);
     if(!token) {
         throw new UnauthorizedException('There is no authorization token!');
     }
 
-    const decodedToken = this.verifyToken(token);
+    const decodedToken = this.jwtUtilsService.verifyToken(token);
     // console.log("This is Decoded Token: ",decodedToken)
     const email = decodedToken.email;
 
@@ -90,13 +74,13 @@ export class AuthService {
   }
 
   async getUserData(request:Request) {
-    const token = this.extractTokenFromHeader(request);
+    const token = this.jwtUtilsService.extractTokenFromHeader(request);
     // console.log("dekho: ",token);
     if(!token) {
         throw new UnauthorizedException('There is no authorization token!');
     }
 
-    const decodedToken = this.verifyToken(token);
+    const decodedToken = this.jwtUtilsService.verifyToken(token);
     // console.log("This is Decoded Token: ",decodedToken)
     const email = decodedToken.email;
 

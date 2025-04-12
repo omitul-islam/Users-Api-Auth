@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Get, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from './entities/user.entity';
 import { Request } from 'express';
+import { AdminGuard } from './guard/admin.guard';
+import { UserGuard } from './guard/user.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +31,7 @@ export class AuthController {
 }
 
 @Controller('admin') 
+@UseGuards(AdminGuard)
 export class AdminController {
     constructor(private readonly authService: AuthService) {}
     
@@ -41,6 +44,7 @@ export class AdminController {
 }
 
 @Controller('user') 
+@UseGuards(UserGuard)
 export class UserController {
     constructor(private readonly authService: AuthService) {}
     
