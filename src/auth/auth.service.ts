@@ -85,6 +85,23 @@ export class AuthService {
     const email = decodedToken.email;
 
     const admin = await this.userRepository.findOneBy({email});
-    return admin;
+    const {password, ...result} = admin!;
+    return result;
+  }
+
+  async getUserData(request:Request) {
+    const token = this.extractTokenFromHeader(request);
+    // console.log("dekho: ",token);
+    if(!token) {
+        throw new UnauthorizedException('There is no authorization token!');
+    }
+
+    const decodedToken = this.verifyToken(token);
+    // console.log("This is Decoded Token: ",decodedToken)
+    const email = decodedToken.email;
+
+    const admin = await this.userRepository.findOneBy({email});
+    const {password, ...result} = admin!;
+    return result;
   }
 }

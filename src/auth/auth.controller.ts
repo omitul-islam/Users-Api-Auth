@@ -39,3 +39,15 @@ export class AdminController {
     }
 
 }
+
+@Controller('user') 
+export class UserController {
+    constructor(private readonly authService: AuthService) {}
+    
+    @Get('data')
+    // will use guard here, later
+    async getAdminData(@Req() request: Request) {
+        return this.authService.getAdminData(request);  
+    }
+
+}
