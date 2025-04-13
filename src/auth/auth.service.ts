@@ -16,7 +16,7 @@ export class AuthService {
   ) {}
 
  
-  async register(id:number, username: string, email: string, age: number, password: string, role: Role) {
+  async register(id:number, username: string, email: string, age: number, password: string) {
     const userExists = await this.userRepository.findOneBy({ email });
     if (userExists) {
       throw new BadRequestException('This User already exists');
@@ -29,7 +29,7 @@ export class AuthService {
       email,
       age,
       password: hashedPassword,
-      role,
+      role:Role.USER,
     });
 
     await this.userRepository.save(newUser);
@@ -69,6 +69,7 @@ export class AuthService {
     const email = decodedToken.email;
 
     const admin = await this.userRepository.findOneBy({email});
+    // console.log("hello")
     const {password, ...result} = admin!;
     return result;
   }
@@ -83,9 +84,9 @@ export class AuthService {
     const decodedToken = this.jwtUtilsService.verifyToken(token);
     // console.log("This is Decoded Token: ",decodedToken)
     const email = decodedToken.email;
-
-    const admin = await this.userRepository.findOneBy({email});
-    const {password, ...result} = admin!;
+ 
+    const user = await this.userRepository.findOneBy({email});
+    const {password, ...result} = user!;
     return result;
   }
 }

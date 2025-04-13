@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Role } from './entities/user.entity';
+import { Role, User } from './entities/user.entity';
 import { Request } from 'express';
 import { AdminGuard } from './guard/admin.guard';
 import { UserGuard } from './guard/user.guard';
@@ -11,14 +11,13 @@ export class AuthController {
 
   @Post('register')
   async register(
-    @Body('id') id: number,
-    @Body('username') username: string,
-    @Body('email') email: string,
-    @Body('age') age: number,
-    @Body('password') password: string,
-    @Body('role') role: Role,
+    @Body() userData:User
   ) {
-    return this.authService.register(id, username, email,age, password, role);
+    return this.authService.register(userData.id,
+      userData.username,
+      userData.email,
+      userData.age,
+      userData.password);
   }
 
   @Post('login')
@@ -36,7 +35,6 @@ export class AdminController {
     constructor(private readonly authService: AuthService) {}
     
     @Get('data')
-    // will use guard here, later
     async getAdminData(@Req() request: Request) {
         return this.authService.getAdminData(request);  
     }

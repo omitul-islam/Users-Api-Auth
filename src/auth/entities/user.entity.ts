@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { IsEmail, IsEnum, IsInt, Length, Max, Min } from 'class-validator';
+import { IsEmail, IsInt, Length, Max, Min } from 'class-validator';
 
 export enum Role {
     ADMIN = 'admin',
@@ -11,6 +11,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
   @Length(4, 20)
   username: string;
 
