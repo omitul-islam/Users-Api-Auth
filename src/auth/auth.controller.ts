@@ -4,18 +4,20 @@ import { Role, User } from './entities/user.entity';
 import { Request } from 'express';
 import { AdminGuard } from './guard/admin.guard';
 import { UserGuard } from './guard/user.guard';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Register as a User' })
     @ApiBody({
     schema: {
       example: {
         username: 'User',
-        email: 'User@example.com',
+        email: 'User@gmail.com',
         password: '123456',
         age: 30,
       },
@@ -32,10 +34,11 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login a user' })
   @ApiBody({
     schema: {
       example:{
-         email: "user@gmail.com",
+         email: "User@gmail.com",
          password:"********"
       }
     }
@@ -48,27 +51,33 @@ export class AuthController {
   }
 }
 
+@ApiTags("Admin")
 @Controller('admin') 
 @UseGuards(AdminGuard)
 export class AdminController {
     constructor(private readonly authService: AuthService) {}
     
     @Get('data')
+    @ApiOperation({summary:"Get data for an Admin"})
+    @ApiBearerAuth('access-token')
     async getAdminData(@Req() request: Request) {
         return this.authService.getAdminData(request);  
     }
 
 }
 
+@ApiTags("User")
 @Controller('user') 
 @UseGuards(UserGuard)
 export class UserController {
     constructor(private readonly authService: AuthService) {}
     
     @Get('data')
-    // will use guard here, later
-    async getAdminData(@Req() request: Request) {
-        return this.authService.getAdminData(request);  
+    @ApiOperation({summary:"Get data for a regular User"})
+    @ApiBearerAuth('access-token')
+
+    async getUserData(@Req() request: Request) {
+        return this.authService.getUserData(request);  
     }
 
 }
