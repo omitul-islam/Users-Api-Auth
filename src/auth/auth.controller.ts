@@ -4,12 +4,23 @@ import { Role, User } from './entities/user.entity';
 import { Request } from 'express';
 import { AdminGuard } from './guard/admin.guard';
 import { UserGuard } from './guard/user.guard';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+    @ApiBody({
+    schema: {
+      example: {
+        username: 'User',
+        email: 'User@example.com',
+        password: '123456',
+        age: 30,
+      },
+    },
+  })
   async register(
     @Body() userData:User
   ) {
@@ -21,6 +32,14 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiBody({
+    schema: {
+      example:{
+         email: "user@gmail.com",
+         password:"********"
+      }
+    }
+  })
   async login(
     @Body('email') email:string,
     @Body('password') password: string
